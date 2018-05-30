@@ -44,7 +44,6 @@
 # *****************************************************************************
 #      Now maintained by Alexander Widerberg (widerbergaren [at] gmail.com)
 #                      under the BSD-3-Clause license
-#                   https://github.com/leetal/ios-cmake
 # *****************************************************************************
 #
 #                           INFORMATION / HELP
@@ -99,6 +98,7 @@ set(CMAKE_HAVE_THREADS_LIBRARY 1)
 set(CMAKE_USE_WIN32_THREADS_INIT 0)
 set(CMAKE_USE_PTHREADS_INIT 1)
 
+
 # Get the Xcode version being used.
 execute_process(COMMAND xcodebuild -version
   OUTPUT_VARIABLE XCODE_VERSION
@@ -133,7 +133,7 @@ set(IOS_PLATFORM ${IOS_PLATFORM} CACHE STRING
 if (IOS_PLATFORM STREQUAL "OS")
   set(XCODE_IOS_PLATFORM iphoneos)
   if(NOT IOS_ARCH)
-    set(IOS_ARCH armv7 armv7s arm64)
+    set(IOS_ARCH arm64)
   endif()
 elseif (IOS_PLATFORM STREQUAL "SIMULATOR")
   set(XCODE_IOS_PLATFORM iphonesimulator)
@@ -209,6 +209,11 @@ execute_process(COMMAND xcodebuild -sdk ${CMAKE_OSX_SYSROOT} -version SDKVersion
 # from CMAKE_OSX_SYSROOT.  Should be ../../ from SDK specified in
 # CMAKE_OSX_SYSROOT.  There does not appear to be a direct way to obtain
 # this information from xcrun or xcodebuild.
+
+message(STATUS "iOS SDK Version: ${IOS_SDK_VERSION}")
+
+set(IOS_SDK_VERSION "10.3.1")
+
 if (NOT CMAKE_IOS_DEVELOPER_ROOT)
   get_filename_component(IOS_PLATFORM_SDK_DIR ${CMAKE_OSX_SYSROOT} PATH)
   get_filename_component(CMAKE_IOS_DEVELOPER_ROOT ${IOS_PLATFORM_SDK_DIR} PATH)
@@ -263,9 +268,8 @@ set(CMAKE_RANLIB ranlib CACHE FILEPATH "" FORCE)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "" CACHE STRING
   "Must be empty for iOS builds." FORCE)
 # Set the architectures for which to build.
+message(STATUS "Using architecture ---: ${IOS_ARCH}")
 set(CMAKE_OSX_ARCHITECTURES ${IOS_ARCH} CACHE STRING "Build architecture for iOS")
-# Change the type of target generated for try_compile() so it'll work when cross-compiling
-set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 # Skip the platform compiler checks for cross compiling.
 set(CMAKE_CXX_COMPILER_FORCED TRUE)
 set(CMAKE_CXX_COMPILER_WORKS TRUE)
@@ -354,9 +358,9 @@ set(CMAKE_C_FLAGS
 # Hidden visibilty is required for C++ on iOS.
 set(CMAKE_CXX_FLAGS
 "${XCODE_IOS_PLATFORM_VERSION_FLAGS} ${BITCODE} ${VISIBILITY} -fvisibility-inlines-hidden -fobjc-abi-version=2 ${FOBJC_ARC} ${CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS} -DNDEBUG -Os -ffast-math ${BITCODE} ${CXX_FLAGS_MINSIZEREL}")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -DNDEBUG -O2 -g -ffast-math ${BITCODE} ${CXX_FLAGS_RELWITHDEBINFO}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -DNDEBUG -O3 -ffast-math ${BITCODE} ${CXX_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS} -DNDEBUG -Os -fomit-frame-pointer -ffast-math ${BITCODE} ${CXX_FLAGS_MINSIZEREL}")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -DNDEBUG -O2 -g -fomit-frame-pointer -ffast-math ${BITCODE} ${CXX_FLAGS_RELWITHDEBINFO}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -DNDEBUG -O3 -fomit-frame-pointer -ffast-math ${BITCODE} ${CXX_FLAGS_RELEASE}")
 set(CMAKE_C_LINK_FLAGS "${XCODE_IOS_PLATFORM_VERSION_FLAGS} -Wl,-search_paths_first ${C_LINK_FLAGS}")
 set(CMAKE_CXX_LINK_FLAGS "${XCODE_IOS_PLATFORM_VERSION_FLAGS}  -Wl,-search_paths_first ${CXX_LINK_FLAGS}")
 
